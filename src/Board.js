@@ -79,57 +79,195 @@
     //
     // test if a specific row on this board contains a conflict
     hasRowConflictAt: function(rowIndex) {
-      return false; // fixme
+      //counter = 0
+      //forEach
+        //  if element === 0, counter ++
+      //return false if counter > 1
+      var counter = 0;
+      var status = false;
+      for (var i = 0; i < this.rows().length; i++) {
+        if (this.rows()[rowIndex][i] === 1) {
+          counter++;
+        }
+        if (counter > 1) { 
+          status = true;
+          break;
+        } 
+      }
+      return status;
     },
 
     // test if any rows on this board contain conflicts
     hasAnyRowConflicts: function() {
-      return false; // fixme
+      var rowConflict = false;
+      for(var i = 0; i < this.rows().length; i++) {
+        if (this.hasRowConflictAt(i)) {
+          rowConflict= true;
+          break;
+        }
+      }
+      return rowConflict
+      //
     },
 
 
-
+    columns: function() {
+      var colArray = [];
+      var matrix = this.rows();
+      for (var j=0; j<matrix.length; j++) {
+        var col = [];
+        for (var i=0; i<matrix.length; i++) {
+          col.push(matrix[i][j]);
+        }
+        colArray.push(col);
+      }
+      return colArray;
+      // return this.rows().reduce(function(matrix, row) {
+      //   return row.reduce(function(colArray, item) {
+      //     colArray.push(item) 
+      //   }, []) 
+      // }, []);
+    },
     // COLUMNS - run from top to bottom
     // --------------------------------------------------------------
     //
     // test if a specific column on this board contains a conflict
     hasColConflictAt: function(colIndex) {
-      return false; // fixme
+      var counter = 0;
+      var status = false;
+      for (var i = 0; i < this.columns().length; i++) {
+        if (this.columns()[colIndex][i] === 1) {
+          counter++;
+        }
+        if (counter > 1) { 
+          status = true;
+          break;
+        } 
+      }
+      return status;
     },
 
     // test if any columns on this board contain conflicts
     hasAnyColConflicts: function() {
-      return false; // fixme
+      var colConflict = false;
+      for(var i = 0; i < this.columns().length; i++) {
+        if (this.hasColConflictAt(i)) {
+          colConflict= true;
+          break;
+        }
+      }
+      return colConflict;
     },
-
-
 
     // Major Diagonals - go from top-left to bottom-right
     // --------------------------------------------------------------
     //
     // test if a specific major diagonal on this board contains a conflict
+
+    majDiag: function() {
+      //Builds a diag array from the top right iterating all the way down to bottom left
+      var majDiagHash = {};
+      //make a matrix of all diag keys
+      for (var i = -(this.get("n")-1); i < (this.get("n")); i++) {
+        majDiagHash[i] = [];
+      }
+      //compute diag index for all values and assign to key
+
+      //iterate over all values in array. calculate diag index and add to key
+
+      for (var t = 0; t < this.get("n"); t++) {
+        for (var u = 0; u <this.get("n"); u++) {
+          majDiagHash[this._getFirstRowColumnIndexForMajorDiagonalOn(t, u)].push(this.rows()[t][u]);
+        }
+      }
+
+      return majDiagHash;
+    },
+
     hasMajorDiagonalConflictAt: function(majorDiagonalColumnIndexAtFirstRow) {
-      return false; // fixme
+      var counter = 0;
+      var status = false;
+      
+      //lookup index and then loop
+      var diagArray = this.majDiag()[majorDiagonalColumnIndexAtFirstRow];
+      for (var i = 0; i < diagArray.length; i++) {
+        if (diagArray[i] === 1) {
+          counter++;
+        }
+        if (counter > 1) { 
+          status = true;
+          break;
+        } 
+      }
+      return status;
     },
 
     // test if any major diagonals on this board contain conflicts
     hasAnyMajorDiagonalConflicts: function() {
-      return false; // fixme
+      var diagConflict = false;
+      var diagHash = this.majDiag();
+      for (var i = -(this.get("n")-1); i < (this.get("n")); i++) {
+        if (this.hasMajorDiagonalConflictAt(i)) {
+          diagConflict = true;
+          break;
+        }        
+      }
+      return diagConflict;
     },
 
+    minDiag: function() {
+      //Builds a diag array from the top right iterating all the way down to bottom left
+      var minorDiagHash = {};
+      //make a matrix of all diag keys
+      for (var i = 0; i <= ((2*this.get("n"))-2); i++) {
+        minorDiagHash[i] = [];
+      }
+      //compute diag index for all values and assign to key
 
+      //iterate over all values in array. calculate diag index and add to key
+
+      for (var a = 0; a < this.get("n"); a++) {
+        for (var b = 0; b <this.get("n"); b++) {
+          minorDiagHash[this._getFirstRowColumnIndexForMinorDiagonalOn(a, b)].push(this.rows()[a][b]);
+        }
+      }
+
+      return minorDiagHash;
+    },
 
     // Minor Diagonals - go from top-right to bottom-left
     // --------------------------------------------------------------
     //
     // test if a specific minor diagonal on this board contains a conflict
     hasMinorDiagonalConflictAt: function(minorDiagonalColumnIndexAtFirstRow) {
-      return false; // fixme
+      var counter = 0;
+      var status = false;
+
+      var diagArray = this.minDiag()[minorDiagonalColumnIndexAtFirstRow];
+      for (var i = 0; i < diagArray.length; i++) {
+        if (diagArray[i] === 1) {
+          counter++;
+        }
+        if (counter > 1) { 
+          status = true;
+          break;
+        } 
+      }
+      return status;
     },
 
     // test if any minor diagonals on this board contain conflicts
     hasAnyMinorDiagonalConflicts: function() {
-      return false; // fixme
+      var diagConflict = false;
+      var diagHash = this.minDiag();
+
+      for (var i = 0; i <= ((2*this.get("n"))-2); i++) {
+        if (this.hasMinorDiagonalConflictAt(i)) {
+          diagConflict = true;
+          break;
+        } 
+      }
+      return diagConflict; // fixme
     }
 
     /*--------------------  End of Helper Functions  ---------------------*/
