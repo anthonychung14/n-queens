@@ -268,7 +268,18 @@
         } 
       }
       return diagConflict; // fixme
+    },
+
+
+    //Solver Helper Functions here
+    toggleSafely: function(rowIndex, colIndex) {
+      //check row conflict
+      this.togglePiece(rowIndex, colIndex)
+      if (this.hasColConflictAt(colIndex) || this.hasRowConflictAt(rowIndex)) {
+        this.togglePiece(rowIndex, colIndex)
+      }
     }
+
 
     /*--------------------  End of Helper Functions  ---------------------*/
 
