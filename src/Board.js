@@ -278,8 +278,15 @@
       if (this.hasColConflictAt(colIndex) || this.hasRowConflictAt(rowIndex)) {
         this.togglePiece(rowIndex, colIndex)
       }
-    }
+    },  
 
+    copy: function() {
+      var degree = this.get('n');
+      var rowArray = this.rows().slice(0);
+      var newBoard = new Board(rowArray);
+      return newBoard;
+
+    }
 
     /*--------------------  End of Helper Functions  ---------------------*/
 
