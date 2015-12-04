@@ -63,15 +63,10 @@ window.countNRooksSolutions = function(n) {
 
   var helper = function(workingRow) { 
     for (var i=0; i < numColumns.length; i++) {
+      
       board.togglePiece(workingRow, numColumns[i]);
       numColumns.splice(i,1);        
-      //Check for conflict. 
-        //If conflict, untoggle piece, 
-      // if(board.hasAnyRooksConflicts()) {
-      //   board.togglePiece(workingRow, i)
-      //   continue;
-      // //Base case: if get to bottom, add to solution
-      // } 
+      
       if (workingRow === n-1) {
         solutionCount++
         board.togglePiece(workingRow, numColumns[i]);
@@ -94,80 +89,90 @@ window.countNRooksSolutions = function(n) {
 
 // return a matrix (an array of arrays) representing a single nxn chessboard, with n queens placed such that none of them can attack each other
 window.findNQueensSolution = function(n) {
-  // var solution;
-  // var board = new Board({"n":n});
-  // var workingRow = 0
-  // var numColumns = n
+  var solution;
+  var board = new Board({"n":n});
+  var workingRow = 0
+  var numColumns = n
 
-  // //i = iterates over the columns. go from workingColumns to numColumns
-  // //
-
-  // var helper = function(workingRow) { 
-  //   for (var i=0; i < numColumns; i++) {
-  //     board.togglePiece(workingRow, i)
-  //     //Check for conflict. 
-  //       //If conflict, untoggle piece, 
-  //     if(board.hasAnyQueensConflicts()) {
-  //       board.togglePiece(workingRow, i)
-  //       continue;
-  //     //Base case: if get to bottom, add to solution
-  //     } 
-  //     if (workingRow === n-1) {
-  //        //board.togglePiece(workingRow, i)
-  //        solution = board.rows();
-  //        break;
-  //       }
-  //     //Recursive case: Iterate to next row and call the same
-  //     else {
-  //       console.log(solution, JSON.stringify(board.rows()))
-  //       helper(workingRow+1);
-  //       if (solution === undefined) {
-  //         board.togglePiece(workingRow, i)
-  //       }
-  //     }  
-  //   }
-  // }
-  // if (n===0) return [];
-  // else if (n===1) solution = [[1]];
-  // else if (n===2) solution = [[0,0],[0,0]];
-  // else if (n===3) solution = [[0,0,0],[0,0,0],[0,0,0]];
-  // else {
-  //   helper(workingRow);
-  // }
-  // console.log('Single solution for ' + n + ' queens:', solution);
-  // return solution;
+  var helper = function(workingRow) { 
+    for (var i=0; i < numColumns; i++) {
+      board.togglePiece(workingRow, i)
+      //Check for conflict. 
+        //If conflict, untoggle piece, 
+      if(board.hasAnyQueensConflicts()) {
+        board.togglePiece(workingRow, i)
+        continue;
+      //Base case: if get to bottom, add to solution
+      } 
+      if (workingRow === n-1) {
+         //board.togglePiece(workingRow, i)
+         solution = board.rows();
+         break;
+        }
+      //Recursive case: Iterate to next row and call the same
+      else {
+        console.log(solution, JSON.stringify(board.rows()))
+        helper(workingRow+1);
+        if (solution === undefined) {
+          board.togglePiece(workingRow, i)
+        }
+      }  
+    }
+  }
+  if (n===0) return [];
+  else if (n===1) solution = [[1]];
+  else if (n===2) solution = [[0,0],[0,0]];
+  else if (n===3) solution = [[0,0,0],[0,0,0],[0,0,0]];
+  else {
+    helper(workingRow);
+  }
+  console.log('Single solution for ' + n + ' queens:', solution);
+  return solution;
 };
 
 // return the number of nxn chessboards that exist, with n queens placed such that none of them can attack each other
 window.countNQueensSolutions = function(n) {
   var solutionCount = 0;
   var board = new Board({"n":n});
+  var badDiag = {};
+  var badDiag2 = {};
+
+  var keyArray = Object.keys(board.majDiag())
+  var keyArray2 = Object.keys(board.minDiag())
+
+  for (var j = 0 ; j < keyArray.length; j++) {
+    badDiag[keyArray[j]] = false;
+    badDiag2[keyArray2[j]] = false; 
+  }
+
+  var checkKeys = function(index1, index2) {
+    return ((badDiag[index2-index1]) || (badDiag2[index1+index2]));
+  }
   
+  var toggleChange = function(matrix, obj1, obj2, index1, index2, state) {
+    matrix.togglePiece(index1, index2);
+    obj1[index2-index1] = state;
+    obj2[index1+index2] = state;
+  }
+
   var workingRow = 0
-  //create numColumns as [0,1,2,3,4,..n-1] representing column index
   var numColumns = _.range(0,n);
 
   var helper = function(workingRow) { 
     for (var i=0; i < numColumns.length; i++) {
-      board.togglePiece(workingRow, numColumns[i]);
-      numColumns.splice(i, 1);
-      //Check for conflict. 
-        //If conflict, untoggle piece, 
-      if(board.hasAnyQueensConflicts()) {
-        board.togglePiece(workingRow, numColumns[i]);
-        numColumns.splice(i,0,i);
-        continue;
-      //Base case: if get to bottom, add to solution
-      } 
+       if (checkKeys(workingRow, numColumns[i])) {
+         continue;
+      }
+      toggleChange(board, badDiag, badDiag2, workingRow, numColumns[i], true);
+      var temp = numColumns.splice(i, 1)[0];
       if (workingRow === n-1) {
-        solutionCount++
-        board.togglePiece(workingRow, numColumns[i]);
-        numColumns.splice(i,0,i);
-      //Recursive case: Iterate to next row and call the same
+        numColumns.splice(i,0,temp);
+        solutionCount++;        
+        toggleChange(board, badDiag, badDiag2, workingRow, numColumns[i], false);
       } else {
         helper(workingRow+1);
-        board.togglePiece(workingRow, numColumns[i]);
-        numColumns.splice(i,0,i);
+        numColumns.splice(i,0,temp);
+        toggleChange(board, badDiag, badDiag2, workingRow, numColumns[i], false);
       }  
     }
   }
